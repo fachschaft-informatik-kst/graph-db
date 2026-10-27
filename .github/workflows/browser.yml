@@ -46,7 +46,8 @@ jobs:
           const dataset=await (await page.request.get('http://127.0.0.1:8080/daten/NEO4J_Freundschaften_GraphDB.cypher')).text();
           await page.locator('#query').fill(dataset);
           await page.locator('#run').click();
-          await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('27 Knoten'),null,{timeout:90000});
+          await page.waitForFunction(()=>{const s=document.querySelector('#status').textContent;return s.includes('27 Knoten')||s.startsWith('Fehler')||s.includes('Startfehler')},null,{timeout:90000});
+          console.log('DATASET STATUS:',await page.locator('#status').innerText());
           const first=await page.locator('#status').innerText();
           if(!first.includes('59 Beziehungen'))throw Error('Dataset first import failed: '+first);
           await page.locator('#run').click();
