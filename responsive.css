@@ -1,0 +1,49 @@
+
+/* Responsive application shell */
+:root{--line:#dce4ee;--surface:#fff;--muted:#64748b}
+body{min-width:0}
+header{min-height:76px;height:auto;padding:14px clamp(12px,2vw,28px)}
+.brand strong{letter-spacing:-.03em}
+.toolbar{justify-content:flex-end;align-items:center}
+.toolbar button,.toolbar .button{min-height:40px}
+main{grid-template-columns:minmax(0,43fr) minmax(0,57fr);gap:16px;padding:16px;min-height:0;height:calc(100dvh - 114px)}
+.editor,.results{box-shadow:0 3px 18px rgba(15,23,42,.045);border-radius:14px}
+.pane-title{height:auto;min-height:56px;gap:10px;flex-wrap:wrap}
+.tabs{scrollbar-width:thin}
+.tab{max-width:240px;overflow:hidden;text-overflow:ellipsis}
+textarea{width:100%;min-height:200px;resize:vertical;line-height:1.65}
+.actions{flex-wrap:wrap;align-items:center}
+#graph{min-height:240px}
+.graph-tools{padding:9px 12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);font-size:12px;background:#fbfdff}
+.graph-tools strong{font-weight:600;color:#475569}
+#label-colors{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center}
+.color-item{display:inline-flex;gap:5px;align-items:center;background:#f1f5f9;border-radius:999px;padding:4px 9px;white-space:nowrap}
+.color-item input{width:24px;height:24px;border:0;background:transparent;padding:0;cursor:pointer}
+#fit-graph{font-size:12px;padding:6px 9px}
+#table[hidden],#graph[hidden]{display:none}
+button:focus-visible,.button:focus-within,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+@media(max-width:1000px){
+ main{grid-template-columns:minmax(0,1fr);height:auto;min-height:0}
+ .editor{min-height:420px;height:min(55dvh,620px)}
+ .results{height:min(65dvh,650px);min-height:420px}
+ header{align-items:flex-start;flex-wrap:wrap}
+ .toolbar{justify-content:flex-start}
+}
+@media(max-width:600px){
+ header{padding:12px;gap:10px}
+ .brand strong{font-size:18px}
+ .logo{font-size:28px}
+ .toolbar{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .toolbar button,.toolbar .button{text-align:center;padding:10px 7px}
+ main{padding:8px;gap:10px}
+ .editor{height:52dvh;min-height:360px}
+ .results{height:66dvh;min-height:440px}
+ .pane-title{padding:10px 12px}
+ .pane-title #status{flex-basis:100%;overflow-wrap:anywhere}
+ textarea{padding:12px;font-size:13px}
+ .actions{padding:9px}
+ .actions button{min-height:42px}
+ .note{padding:8px 12px}
+ #properties{height:110px}
+ dialog{width:calc(100% - 24px);max-height:90dvh;overflow:auto}
+}
