@@ -16,7 +16,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Test UI and WASM
         run: |
-          cd dist && python3 -m http.server 8080 &\n          sleep 2
+          cd dist && python3 -m http.server 8080 &
+          sleep 2
           node --input-type=module <<'EOF'
           import { chromium } from 'playwright';
           const browser = await chromium.launch({headless:true});
