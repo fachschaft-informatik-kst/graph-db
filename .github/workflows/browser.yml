@@ -1,0 +1,50 @@
+name: Browser integration
+on:
+  push:
+    branches: [feat/wasm-github-workspaces]
+  pull_request:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install && npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Test UI and WASM
+        run: |
+          cd dist && python3 -m http.server 8080 &
+          sleep 2
+          node --input-type=module <<'EOF'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage();
+          const errors=[];
+          page.on('pageerror',e=>errors.push(e.message));
+          await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.locator('#demo').click();
+          await page.waitForTimeout(1000);
+          const status=await page.locator('#status').innerText();
+          if(!status.includes('5 Knoten')||!status.includes('4 Beziehungen'))throw Error('Demo failed: '+status);
+          await page.locator('#view-table').click();
+          const count=await page.locator('#table tr').count();
+          if(count!==6)throw Error('Table rows: '+count);
+          await page.locator('#share').click();
+          if(!await page.locator('#connect-github').isVisible())throw Error('GitHub dialog missing');
+          await page.locator('#close').click();
+          await page.goto('http://127.0.0.1:8080/wasm.html');
+          await page.locator('#wasm-init').click();
+          await page.waitForTimeout(30000);
+          const wasm=await page.locator('#wasm-status').innerText();
+          if(!wasm.includes('WASM initialisiert'))throw Error('WASM failed: '+wasm);
+          await page.locator('#wasm-run').click();
+          await page.waitForTimeout(2000);
+          const result=await page.locator('#wasm-status').innerText();
+          if(!result.includes('Cypher ausgeführt'))throw Error('Cypher failed: '+result);
+          if(errors.length)throw Error('Page errors: '+errors.join('; '));
+          await browser.close();
+          console.log('Browser integration passed');
+          EOF

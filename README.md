@@ -25,3 +25,13 @@ Eine echte Cypher-fähige WASM-Engine integrieren und den Neo4j-Datenimport mit 
 ## Datenschutz
 
 URL-Fragmente können den gesamten Arbeitsstand enthalten; jeder mit dem Link kann ihn lesen. Gists sind selbst bei `public:false` über ihre URL abrufbar und nicht für geheime Daten geeignet. Das GitHub-Token wird nur für den Gist-API-Aufruf verwendet und nicht persistiert.
+
+## GitHub-Konto und Gists (Entwicklungsbranch)
+
+Im Teilen-Dialog kann ein GitHub-Token mit Gist-Berechtigung für die laufende Browsersitzung hinterlegt werden. Über **Mit GitHub-Token verbinden** wird `GET /user` aufgerufen und der GitHub-Benutzername angezeigt. Bei gleichem Origin (`fachschaft-informatik-kst.github.io`) kann die Anwendung nach ausdrücklichem Klick auch einen bereits in SQLime unter `github.token` hinterlegten Token übernehmen. Die neue Anwendung schreibt den Token **nur in sessionStorage**, nicht in localStorage. Achtung: Der bereits von SQLime gespeicherte Token kann weiterhin in dessen localStorage liegen.
+
+Beim Speichern wird ein neuer Gist erzeugt oder ein bereits geöffneter Gist **nur dann aktualisiert**, wenn dessen GitHub-Owner dem verbundenen Konto entspricht. Ein Gist eines anderen Kontos wird als Kopie gespeichert. Gist-Links öffnen die gespeicherten Tabs, Knoten und Kanten; GraphDB JSON ist das Austauschformat. Dies ist **keine** Binärdatenbank-Sicherung einer echten LadybugDB-Engine.
+
+## WASM-Labor
+
+`wasm.html` ist ein **experimenteller, separater** Integrationsversuch mit dem offiziellen Paket `@ladybugdb/wasm-core@0.20.1`. Es bietet Initialisierung und direkte Cypher-Ausführung; eine erfolgreiche Initialisierung im echten Browser ist **noch nicht durch CI verifiziert**. Die reguläre Oberfläche nutzt weiterhin den eingeschränkten Prototyp. Vor dem Umschalten müssen Worker-/WASM-Asset-Auflösung, Datenbank-Schemaerstellung, Ergebnisformate, Import und die Visualisierung anhand der originalen Neo4j-Datei getestet werden.
