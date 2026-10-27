@@ -31,6 +31,7 @@ jobs:
           await page.locator('#help-panel details').first().locator('button').click();
           if((await page.locator('#query').inputValue()).trim()!=='MATCH (p:Person) RETURN p;')throw Error('Help example was not inserted');
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='true')throw Error('Help drawer did not close');
+          console.log('ENGINE BINDING',await page.evaluate(()=>document.querySelector('#run').onclick?.toString().slice(0,120)),'PAGE ERRORS',errors);
           await page.locator('#demo').click();
           await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 Knoten'),null,{timeout:60000});
           const status=await page.locator('#status').innerText();
