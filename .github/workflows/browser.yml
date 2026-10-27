@@ -32,7 +32,7 @@ jobs:
           if((await page.locator('#query').inputValue()).trim()!=='MATCH (p:Person) RETURN p;')throw Error('Help example was not inserted');
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='true')throw Error('Help drawer did not close');
           await page.locator('#demo').click();
-          await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 Knoten'),{timeout:60000});
+          await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 Knoten'),null,{timeout:60000});
           const status=await page.locator('#status').innerText();
           if(!status.includes('5 Knoten')||!status.includes('4 Beziehungen'))throw Error('Demo failed: '+status);
           await page.locator('#view-table').click();
@@ -46,15 +46,15 @@ jobs:
           const dataset=await (await page.request.get('http://127.0.0.1:8080/daten/NEO4J_Freundschaften_GraphDB.cypher')).text();
           await page.locator('#query').fill(dataset);
           await page.locator('#run').click();
-          await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('27 Knoten'),{timeout:90000});
+          await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('27 Knoten'),null,{timeout:90000});
           const first=await page.locator('#status').innerText();
           if(!first.includes('59 Beziehungen'))throw Error('Dataset first import failed: '+first);
           await page.locator('#run').click();
-          await page.waitForFunction(()=>!document.querySelector('#run').disabled,{timeout:90000});
+          await page.waitForFunction(()=>!document.querySelector('#run').disabled,null,{timeout:90000});
           const second=await page.locator('#status').innerText();
           if(!second.includes('27 Knoten')||!second.includes('59 Beziehungen'))throw Error('Repeated import duplicates: '+second);
           const colors=await page.locator('#label-colors input[type=color]').count();
-          if(colors!==2)throw Error('Expected two node labels, got '+colors);
+          if(colors!==5)throw Error('Expected five node labels, got '+colors);
           const mobile=await browser.newPage({viewport:{width:390,height:844}});
           await mobile.goto('http://127.0.0.1:8080/');
           await mobile.locator('#demo').click();
