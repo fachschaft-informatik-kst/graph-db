@@ -78,7 +78,7 @@ async function runWithEngine(){
  let index=0;
  try{
   const conn=await initializeEngine();
-  for(const part of statements){index++;await executeEngine(part,conn)}
+  for(const part of statements){index++;$("status").textContent="Importiere Anweisung "+index+"/"+statements.length+" · "+nodes.length+" Knoten · "+edges.length+" Beziehungen";await executeEngine(part,conn)}
   draw();
   $("status").textContent="LadybugDB · "+nodes.length+" Knoten · "+edges.length+" Beziehungen · "+statements.length+" Anweisungen";
  }catch(e){draw();$("status").textContent="Fehler bei Anweisung "+index+"/"+statements.length+": "+e.message;console.error(e)}
