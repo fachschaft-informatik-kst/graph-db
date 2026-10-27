@@ -35,6 +35,8 @@ jobs:
           await page.locator('#share').click();
           if(!await page.locator('#connect-github').isVisible())throw Error('GitHub dialog missing');
           await page.locator('#close').click();
+          page.once('dialog',d=>d.accept());
+          await page.locator('#reset-db').click();
           const dataset=await (await page.request.get('http://127.0.0.1:8080/daten/NEO4J_Freundschaften_GraphDB.cypher')).text();
           await page.locator('#query').fill(dataset);
           await page.locator('#run').click();
