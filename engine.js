@@ -73,7 +73,7 @@ async function executeEngine(part,conn){
 }
 async function runWithEngine(){
  tabs[active].text=$("query").value;
- const statements=split(tabs[active].text).map(statementParts).filter(p=>p.kind!=="query"||p.query);
+ const statements=split(tabs[active].text.replace(/^\\s*\\/\\/.*$/gm,"")).map(statementParts).filter(p=>p.kind!=="query"||p.query);
  const button=$("run");button.disabled=true;rows=[];
  let index=0;
  try{
