@@ -13,6 +13,6 @@
 <section class="results"><div class="pane-title"><strong>Ergebnis</strong><div class="switch"><button id="view-graph" class="selected">Graph</button><button id="view-table">Tabelle</button></div></div>
 <div id="graph"></div><div id="table" hidden></div><div id="properties"><strong>Eigenschaften</strong><p>Knoten oder Beziehung anklicken.</p></div></section></main>
 <dialog id="share-dialog"><h2>Arbeitsstand teilen</h2><p>Ein Link enthält die Cypher-Skripte und öffnet sie beim Aufruf. Für grössere Dateien kann ein GitHub Gist verwendet werden.</p>
-<label>GitHub-Token (nur für Gist-Erstellung, nicht gespeichert)<input type="password" id="token" autocomplete="off" placeholder="github_pat_…"></label>
-<div class="actions"><button id="link">Link kopieren</button><button id="gist">Gist erstellen</button><button id="close">Schliessen</button></div><p id="share-message"></p></dialog>
+<label>GitHub-Token mit Gist-Berechtigung (nur für diese Sitzung)<input type="password" id="token" autocomplete="off" placeholder="ghp_…"></label><p id="github-user">Nicht mit GitHub verbunden</p><button id="connect-github">Mit GitHub-Token verbinden</button><button id="disconnect-github">Verbindung trennen</button>
+<div class="actions"><button id="link">Link kopieren</button><button id="gist">Gist speichern</button><button id="close">Schliessen</button></div><p id="share-message"></p></dialog>
 <footer>GraphDB · lokal im Browser · <a href="https://github.com/fachschaft-informatik-kst/graph-db">Quellcode</a></footer></body></html>
