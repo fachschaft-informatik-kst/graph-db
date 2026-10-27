@@ -51,7 +51,7 @@ async function executeEngine(part,conn){
   const key=keyFor(part.label,part.data);
   if(engineState.seenNodes.has(key))return;
   const fields=Object.entries(part.data).map(([k,v])=>k+": "+quote(v)).join(", ");
-  await conn.query("MERGE (n:"+part.label+" "+nodeKeyPattern(part.label,part.data)+") SET n += {"+fields+"}");
+  await conn.query("CREATE (n:"+part.label+" {"+fields+"})");
   engineState.seenNodes.add(key);
   nodes.push({id:"n"+(nodes.length+1),label:part.label,data:part.data});
   return;
@@ -60,7 +60,7 @@ async function executeEngine(part,conn){
   const a=keyFor(part.from,part.a),b=keyFor(part.to,part.b),key=a+"|"+part.type+"|"+b;
   if(engineState.seenEdges.has(key))return;
   if(!engineState.seenNodes.has(a)||!engineState.seenNodes.has(b))throw Error("Beziehung verweist auf nicht vorhandenen Knoten: "+key);
-  await conn.query("MATCH (a:"+part.from+" "+nodeKeyPattern(part.from,part.a)+"), (b:"+part.to+" "+nodeKeyPattern(part.to,part.b)+") MERGE (a)-[r:"+part.type+"]->(b)");
+  await conn.query("MATCH (a:"+part.from+" "+nodeKeyPattern(part.from,part.a)+"), (b:"+part.to+" "+nodeKeyPattern(part.to,part.b)+") CREATE (a)-[r:"+part.type+"]->(b)");
   engineState.seenEdges.add(key);
   const from=nodes.find(n=>keyFor(n.label,n.data)===a),to=nodes.find(n=>keyFor(n.label,n.data)===b);
   edges.push({id:"e"+(edges.length+1),source:from.id,target:to.id,label:part.type,data:{}});
