@@ -1,21 +1,20 @@
-// Experimental integration. Keep isolated until browser integration tests pass.
-// Official package: https://www.npmjs.com/package/@ladybugdb/wasm-core
+// Bundled locally by build.mjs; both module and worker are same-origin.
 let conn;
 const status=document.getElementById("wasm-status");
 const output=document.getElementById("wasm-output");
 document.getElementById("wasm-init").onclick=async()=>{
  status.textContent="LadybugDB WASM wird geladen…";
- try {
-  // Version pinned for reproducibility; CDN is only for this experimental page.
-  const module=await import("https://esm.sh/@ladybugdb/wasm-core@0.20.1");
-  const lbug=module.default;
-  if(typeof lbug.init==="function")await lbug.init();
+ const button=document.getElementById("wasm-init");button.disabled=true;
+ try{
+  const {default:lbug}=await import("./vendor/lbug.js");
+  lbug.setWorkerPath(new URL("./vendor/lbug_wasm_worker.js",location.href).href);
+  await lbug.init();
   const db=new lbug.Database(":memory:");
   conn=new lbug.Connection(db);
-  if(typeof conn.init==="function")await conn.init();
+  await conn.init();
   document.getElementById("wasm-run").disabled=false;
   status.textContent="WASM initialisiert. Bereit für Cypher.";
- }catch(e){status.textContent="WASM konnte nicht initialisiert werden: "+e.message;console.error(e)}
+ }catch(e){status.textContent="WASM konnte nicht initialisiert werden: "+e.message;console.error(e);button.disabled=false}
 };
 document.getElementById("wasm-run").onclick=async()=>{
  if(!conn)return;
@@ -23,12 +22,9 @@ document.getElementById("wasm-run").onclick=async()=>{
  if(!q)return;
  try{
   const result=await conn.query(q);
-  const results=Array.isArray(result)?result:[result];
-  const all=[];
-  for(const r of results){
-   try{all.push(...(await r.getAll()))}finally{if(typeof r.close==="function")await r.close()}
-  }
-  output.textContent=JSON.stringify(all,(_,v)=>typeof v==="bigint"?v.toString():v,2);
+  const rows=typeof result.getAllObjects==="function"?await result.getAllObjects():await result.getAllRows();
+  output.textContent=JSON.stringify(rows,(_,v)=>typeof v==="bigint"?v.toString():v,2);
   status.textContent="Cypher ausgeführt.";
+  if(typeof result.close==="function")await result.close();
  }catch(e){status.textContent="Cypher-Fehler: "+e.message;output.textContent=""}
 };
