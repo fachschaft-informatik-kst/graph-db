@@ -25,6 +25,12 @@ jobs:
           const errors=[];
           page.on('pageerror',e=>errors.push(e.message));
           await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          await page.locator('#help-open').click();
+          if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='false')throw Error('Help drawer did not open');
+          await page.locator('#help-panel details').first().locator('summary').click();
+          await page.locator('#help-panel details').first().locator('button').click();
+          if((await page.locator('#query').inputValue()).trim()!=='MATCH (p:Person) RETURN p;')throw Error('Help example was not inserted');
+          if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='true')throw Error('Help drawer did not close');
           await page.locator('#demo').click();
           await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 Knoten'),{timeout:60000});
           const status=await page.locator('#status').innerText();
