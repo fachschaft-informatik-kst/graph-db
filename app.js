@@ -1,7 +1,7 @@
 /* GraphDB prototype: intentionally limited local Cypher subset, not Neo4j. */
 const $=id=>document.getElementById(id);
 let tabs=[{name:"Abfrage 1",text:"MATCH (n) RETURN n"}],active=0,nodes=[],edges=[],cy,rows=[];
-const demo=String.raw\`CREATE (:Person {name:'Anna', age:18});
+const demo=String.raw`CREATE (:Person {name:'Anna', age:18});
 CREATE (:Person {name:'Nina', age:19});
 CREATE (:Person {name:'Max', age:18});
 CREATE (:Person {name:'Amir', age:20});
@@ -10,7 +10,7 @@ MATCH (a:Person {name:'Anna'}), (b:Person {name:'Nina'}) CREATE (a)-[:KNOWS]->(b
 MATCH (a:Person {name:'Nina'}), (b:Person {name:'Max'}) CREATE (a)-[:KNOWS]->(b);
 MATCH (a:Person {name:'Max'}), (b:Person {name:'Amir'}) CREATE (a)-[:KNOWS]->(b);
 MATCH (a:Person {name:'Amir'}), (b:Hobby {name:'Coding'}) CREATE (a)-[:LIKES]->(b);
-MATCH (n) RETURN n;\`;
+MATCH (n) RETURN n;`;
 function split(s){let out=[],start=0,quote=null,depth=0;for(let i=0;i<s.length;i++){const c=s[i];if((c==="'"||c==='"')&&s[i-1]!=="\\"){quote=quote===c?null:quote||c;}if(!quote){if(c==='{'||c==='['||c==='(')depth++;if(c==='}'||c===']'||c===')')depth--;if(c===';'&&depth===0){out.push(s.slice(start,i).trim());start=i+1;}}}out.push(s.slice(start).trim());return out.filter(Boolean)}
 function props(src){const out={};for(const m of src.matchAll(/(\w+)\s*:\s*('(?:[^']*)'|"(?:[^"]*)"|-?\d+(?:\.\d+)?|true|false)/g)){let v=m[2];out[m[1]]=v[0]==="'"||v[0]==='"'?v.slice(1,-1):v==='true'?true:v==='false'?false:Number(v)}return out}
 function pattern(s){const m=s.match(/\(\s*(\w*)\s*(?::\s*(\w+))?\s*(?:\{([^}]*)\})?\s*\)/);return m?{alias:m[1],label:m[2],props:props(m[3]||"")}:null}
