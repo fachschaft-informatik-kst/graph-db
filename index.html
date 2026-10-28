@@ -8,7 +8,7 @@
 <button id="export">Exportieren</button><button id="share">Teilen / Gist</button></div></header>
 <main><section class="editor"><div class="pane-title"><strong>Cypher-Editor</strong><span id="status">Bereit</span></div><div class="tabs" id="tabs"></div>
 <div class="code-editor"><pre id="query-highlight" aria-hidden="true"><code></code></pre><textarea id="query" spellcheck="false" aria-label="Cypher-Abfrage" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea></div>
-<div class="actions"><button id="add-tab">+ Tab</button><button id="run" class="primary">▶ Ausführen</button></div>
+<div class="actions"><button id="run" class="primary">▶ Ausführen</button></div>
 <div class="note">LadybugDB-WASM · Browser-Datenbank. Neo4j-Cypher ist nicht vollständig kompatibel. Für CREATE-Importe werden Knotenlabels und Beziehungstypen automatisch als Tabellen angelegt; Knoten benötigen id oder name als Schlüssel.</div></section>
 <section class="results"><div class="pane-title"><strong>Ergebnis</strong><div class="switch"><button id="view-graph" class="selected">Graph</button><button id="view-table">Tabelle</button></div></div>
 <div class="graph-tools"><strong>Knotenfarben nach Label</strong><div id="label-colors" aria-label="Farben der Knotenlabels"></div><button type="button" id="fit-graph" title="Alle Knoten anzeigen">Graph einpassen</button></div><div id="graph"></div><div id="table" hidden></div><div id="properties"><strong>Eigenschaften</strong><p>Knoten oder Beziehung anklicken.</p></div></section></main>
