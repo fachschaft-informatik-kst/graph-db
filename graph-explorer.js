@@ -1,23 +1,37 @@
 /* Interactive exploration of the imported graph and query results. */
 (()=>{
  const $=id=>document.getElementById(id),stage=document.querySelector(".graph-stage"),table=$("table"),menu=$("graph-context");
- let scope=null,history=[],selection=null,queryMode=false,resultIds=new Set(),size=42;const expanded=new Set();
+ let scope=null,history=[],selection=null,queryMode=false,resultIds=new Set(),resultEdges=new Set(),size=42;const expanded=new Set();
  const captions={};
  const all=()=>new Set(nodes.map(n=>n.id));
  const visible=()=>scope|| (queryMode?resultIds:all());
  const label=n=>String(n.data[captions[n.label]||(["name","title","id"].find(k=>n.data[k]!=null))||Object.keys(n.data)[0]]??n.label);
- function save(){history.push({scope:scope?new Set(scope):null,queryMode,resultIds:new Set(resultIds),pan:cy?.pan(),zoom:cy?.zoom()});if(history.length>30)history.shift();$("graph-back").disabled=false}
+ function save(){history.push({scope:scope?new Set(scope):null,queryMode,resultIds:new Set(resultIds),resultEdges:new Set(resultEdges),pan:cy?.pan(),zoom:cy?.zoom()});if(history.length>30)history.shift();$("graph-back").disabled=false}
  function redraw(keep=false){
-  if(!cy)return;const pan=cy.pan(),zoom=cy.zoom(),ids=visible();
-  cy.elements().remove();
-  cy.add(nodes.filter(n=>ids.has(n.id)).map(n=>({data:{id:n.id,name:label(n),label:n.label,properties:n.data}})).concat(edges.filter(e=>ids.has(e.source)&&ids.has(e.target)).map(e=>({data:{id:e.id,source:e.source,target:e.target,label:e.label,properties:e.data}}))));
+  if(!cy)return;
+  const ids=visible(),existing=new Set(cy.nodes().map(n=>n.id()));
+  const wantedEdges=edges.filter(e=>ids.has(e.source)&&ids.has(e.target)&&(!queryMode||resultEdges.has(e.id)));
+  const desired=new Set([...ids,...wantedEdges.map(e=>e.id)]);
+  const before=new Set(cy.elements().map(e=>e.id()));
+  const removed=cy.elements().filter(e=>!desired.has(e.id()));
+  if(removed.length)removed.remove();
+  const newNodes=nodes.filter(n=>ids.has(n.id)&&!cy.getElementById(n.id).length);
+  const center=cy.nodes().length?cy.nodes().boundingBox():{x1:0,y1:0,w:0,h:0};
+  const addedNodes=newNodes.map((n,i)=>({data:{id:n.id,name:label(n),label:n.label,properties:n.data},position:{x:center.x1+center.w/2+Math.cos(i*2.39996)*Math.sqrt(i+1)*75,y:center.y1+center.h/2+Math.sin(i*2.39996)*Math.sqrt(i+1)*75}}));
+  const addedEdges=wantedEdges.filter(e=>!cy.getElementById(e.id).length).map(e=>({data:{id:e.id,source:e.source,target:e.target,label:e.label,edgeColor:relationshipColor(e.label),properties:e.data}}));
+  cy.add([...addedNodes,...addedEdges]);
+  cy.nodes().forEach(n=>{const source=nodes.find(x=>x.id===n.id());if(source)n.data("name",label(source))});
   if(typeof applyLabelColors==="function")applyLabelColors();
   cy.nodes().style({width:size,height:size});
   if(selection&&cy.getElementById(selection).length)cy.getElementById(selection).select();
-  if(keep){cy.zoom(zoom);cy.pan(pan)}else if(cy.elements().length){if(window.graphLayout)window.graphLayout.apply();else cy.layout({name:"cose",animate:false,randomize:false,fit:true,padding:40}).run()}
+  // Existing nodes keep their positions and viewport. Re-layout only when new nodes appear.
+  if(newNodes.length&&cy.elements().length&&!keep){
+   if(window.graphLayout)window.graphLayout.apply();
+   else cy.layout({name:"cose",animate:false,randomize:false,fit:false}).run();
+  }
   $("graph-empty").hidden=ids.size>0;highlight();
  }
- function reset(){save();scope=null;expanded.clear();queryMode=false;resultIds.clear();redraw()}
+ function reset(){save();scope=null;expanded.clear();queryMode=false;resultIds.clear();resultEdges.clear();redraw()}
  function neighbors(id,type){
   save();const ids=scope?new Set(visible()):new Set([id]);ids.add(id);
   for(const e of edges)if((e.source===id||e.target===id)&&(!type||e.label===type)){ids.add(e.source);ids.add(e.target)}
@@ -54,7 +68,7 @@
  }
  $("graph-search").oninput=highlight;
  $("graph-back").disabled=true;
- $("graph-back").onclick=()=>{const p=history.pop();if(!p)return;scope=p.scope;queryMode=p.queryMode;resultIds=p.resultIds;redraw();if(p.zoom!=null){cy.zoom(p.zoom);cy.pan(p.pan)}$("graph-back").disabled=!history.length};
+ $("graph-back").onclick=()=>{const p=history.pop();if(!p)return;scope=p.scope;queryMode=p.queryMode;resultIds=p.resultIds;resultEdges=p.resultEdges||new Set();redraw();if(p.zoom!=null){cy.zoom(p.zoom);cy.pan(p.pan)}$("graph-back").disabled=!history.length};
  $("graph-reset").onclick=reset;
  $("graph-node-size").oninput=e=>{size=Number(e.target.value);cy?.nodes().style({width:size,height:size})};
  function download(uri,name){const a=document.createElement("a");a.href=uri;a.download=name;document.body.append(a);a.click();a.remove()}
@@ -89,12 +103,28 @@
   if(key==null)return null;
   return nodes.find(n=>(!ls.length||ls.includes(n.label))&&(n.data.id===key||n.data.name===key))?.id||null;
  }
- function rowIds(rs){
-  const ids=new Set();
-  function walk(v){if(Array.isArray(v)){v.forEach(walk);return}if(!v||typeof v!=="object")return;const id=resolveNode(v);if(id)ids.add(id);for(const [k,x]of Object.entries(v))if(k!=="properties"&&k!=="_properties"&&typeof x==="object")walk(x)}
-  rs.forEach(walk);return ids;
+ function resultGraph(rs){
+  const ids=new Set(),relIds=new Set();
+  const seen=new WeakSet();
+  function walk(v){
+   if(Array.isArray(v)){v.forEach(walk);return}
+   if(!v||typeof v!=="object"||seen.has(v))return;seen.add(v);
+   const id=resolveNode(v);if(id)ids.add(id);
+   // A relationship is included only if it is explicitly returned by the engine.
+   // Endpoint references may be nested node values or internal endpoint identifiers.
+   const type=v.label||v.type||v._label||v._type;
+   const from=resolveNode(v.source||v.src||v._src||v.from||v.startNode);
+   const to=resolveNode(v.target||v.dst||v._dst||v.to||v.endNode);
+   if(type&&from&&to){
+    const edge=edges.find(e=>e.source===from&&e.target===to&&e.label===type);
+    if(edge){relIds.add(edge.id);ids.add(from);ids.add(to)}
+   }
+   for(const [k,x]of Object.entries(v))if(k!=="properties"&&k!=="_properties"&&typeof x==="object")walk(x);
+  }
+  rs.forEach(walk);return {ids,relIds};
  }
- const oldDraw=draw;draw=function(){oldDraw();bind();redraw();captionsUI()};
+ function rowIds(rs){return resultGraph(rs).ids}
+ const oldDraw=draw;draw=function(){oldDraw();bind();redraw();if(typeof refreshLabelColors==="function")refreshLabelColors();captionsUI()};
  const oldTable=drawTable;drawTable=function(){
   oldTable();[...table.querySelectorAll("tr")].slice(1).forEach((tr,i)=>{const ids=rowIds([rows[i]]);if(ids.size!==1)return;const id=[...ids][0];tr.dataset.nodeId=id;tr.tabIndex=0;tr.title="Knoten im Graph markieren";tr.onclick=()=>select(id);tr.onkeydown=e=>{if(e.key==="Enter")select(id)}});
  };
@@ -108,6 +138,6 @@
  $("view-graph").onclick=()=>view("graph");$("view-table").onclick=()=>view("table");$("view-both").onclick=()=>view("both");
  const oldWorkspace=workspace;workspace=function(){return {...oldWorkspace(),graphExplorer:{captions:{...captions},size}}};
  const oldLoad=load;load=function(w){Object.assign(captions,w?.graphExplorer?.captions||{});size=w?.graphExplorer?.size||42;$("graph-node-size").value=size;scope=null;queryMode=false;history=[];oldLoad(w)};
- window.graphExplorer={selectItem:select,onQuery(){resultIds=rowIds(rows);queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();history=[];expanded.clear();redraw()},refresh(){redraw(true);captionsUI()}};
+ window.graphExplorer={selectItem:select,onQuery(){const result=resultGraph(rows);resultIds=result.ids;resultEdges=result.relIds;queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();resultEdges.clear();history=[];expanded.clear();redraw()},refresh(){redraw(true);captionsUI()}};
  draw();view("graph");
 })();
