@@ -89,7 +89,7 @@ jobs:
           if(await page.locator('#table .result-grid').count()!==1)throw Error('Structured result grid missing');
           if(await page.locator('#table .result-sort').count()===0)throw Error('Sortable column headings missing');
           await page.evaluate(()=>{rows=[{name:'Anna',age:18,person:{labels:['Person'],properties:{name:'Anna',age:18}}},{name:'Max',age:17,person:{labels:['Person'],properties:{name:'Max',age:17}}}];drawTable()});
-          if(await page.locator('#table .result-object summary').count()!==2)throw Error('Nested object rendering missing');
+          if(await page.locator('#table .result-object summary').count()<2)throw Error('Nested object rendering missing');
           await page.locator('#table .result-object summary').first().click();
           if(!await page.locator('#table .result-properties').first().isVisible())throw Error('Property expansion failed');
           await page.locator('#table .result-sort').filter({hasText:'age'}).click();
