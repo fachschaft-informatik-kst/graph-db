@@ -25,4 +25,4 @@ const originalWorkspace=workspace;
 workspace=function(){return {...originalWorkspace(),labelColors:{...labelColors}}};
 const originalLoad=load;
 load=function(w){labelColors=w?.labelColors&&typeof w.labelColors==="object"?{...w.labelColors}:{};originalLoad(w)};
-document.getElementById("fit-graph").onclick=()=>cy?.fit(undefined,36);
+
