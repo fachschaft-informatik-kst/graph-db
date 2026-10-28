@@ -1,18 +1,17 @@
 /* Contextual, expandable Cypher documentation for teaching. */
 const examples=[
- {group:"Grundlagen",title:"Alle Personen",description:"MATCH findet Knoten eines Labels, RETURN liefert sie zurück.",query:"MATCH (p:Person) RETURN p;"},
- {group:"Grundlagen",title:"Nach Namen filtern",description:"WHERE schränkt Ergebnisse ein. Eigenschaften werden mit Punktnotation gelesen.",query:"MATCH (p:Person) WHERE p.name = 'Anna' RETURN p;"},
- {group:"Grundlagen",title:"Eigenschaften ausgeben",description:"Einzelne Spalten statt kompletter Knoten zurückgeben.",query:"MATCH (p:Person) RETURN p.name, p.age;"},
- {group:"Grundlagen",title:"Sortieren und begrenzen",description:"ORDER BY sortiert, LIMIT beschränkt die Anzahl der Ergebnisse.",query:"MATCH (p:Person) RETURN p.name, p.age ORDER BY p.age DESC LIMIT 5;"},
- {group:"Beziehungen",title:"Freundschaften",description:"Der Pfeil legt die Richtung einer Beziehung fest.",query:"MATCH (a:Person)-[:KNOWS]->(b:Person) RETURN a.name, b.name;"},
- {group:"Beziehungen",title:"Freunde von Anna",description:"Ein bestimmter Startknoten wird über seine Eigenschaft gewählt.",query:"MATCH (a:Person {name:'Anna'})-[:KNOWS]->(b:Person) RETURN b.name;"},
- {group:"Beziehungen",title:"Freunde von Freunden",description:"Zwei aufeinanderfolgende KNOWS-Beziehungen durchsuchen.",query:"MATCH (a:Person {name:'Anna'})-[:KNOWS]->(b:Person)-[:KNOWS]->(c:Person) RETURN b.name, c.name;"},
- {group:"Beziehungen",title:"Personen mit Hobby Coding",description:"Über LIKES wird ein Personenknoten mit einem Hobby verbunden.",query:"MATCH (p:Person)-[:LIKES]->(h:Hobby {name:'Coding'}) RETURN p.name, h.name;"},
- {group:"Beziehungen",title:"Freundschaften und Hobbys",description:"Mehrere Beziehungsmuster lassen sich in einer Abfrage kombinieren.",query:"MATCH (a:Person)-[:KNOWS]->(b:Person), (b)-[:LIKES]->(h:Hobby) RETURN a.name, b.name, h.name;"},
- {group:"Auswertung",title:"Personen zählen",description:"COUNT zählt die gefundenen Knoten.",query:"MATCH (p:Person) RETURN count(p);"},
- {group:"Auswertung",title:"Hobbys gruppieren",description:"COUNT und GROUP BY-artige Aggregation über gemeinsame Rückgabespalten.",query:"MATCH (p:Person)-[:LIKES]->(h:Hobby) RETURN h.name, count(p) ORDER BY count(p) DESC;"},
- {group:"Daten verändern",title:"Knoten anlegen",description:"Im bereitgestellten Importformat werden Knoten anhand des Labels und ihres Schlüssels beim wiederholten Ausführen übersprungen.",query:"CREATE (:Person {name:'Eva', age:18});"},
- {group:"Daten verändern",title:"Beziehung anlegen",description:"Für die Unterrichtsdatei unterstützt der Import zwei benannte Knoten und CREATE.",query:"MATCH (a:Person {name:'Anna'}), (b:Person {name:'Max'}) CREATE (a)-[:KNOWS]->(b);"}
+ {group:"Grundlagen",title:"Alle Knoten",description:"MATCH (n) sucht alle Knoten, unabhängig von ihrem Label.",query:"MATCH (n) RETURN n;"},
+ {group:"Grundlagen",title:"Knoten nach Label",description:"Ersetzen Sie Label durch einen Knotentyp aus Ihrer Datenbank.",query:"MATCH (n:Label) RETURN n;"},
+ {group:"Grundlagen",title:"Nach Eigenschaft filtern",description:"WHERE schränkt Ergebnisse anhand einer Eigenschaft ein.",query:"MATCH (n:Label) WHERE n.name = 'Beispiel' RETURN n;"},
+ {group:"Grundlagen",title:"Eigenschaften anzeigen",description:"Punktnotation greift auf Eigenschaften zu.",query:"MATCH (n:Label) RETURN n.name;"},
+ {group:"Grundlagen",title:"Sortieren und begrenzen",description:"ORDER BY und LIMIT sortieren und begrenzen Ergebnisse.",query:"MATCH (n:Label) RETURN n.name ORDER BY n.name LIMIT 10;"},
+ {group:"Beziehungen",title:"Gerichtete Beziehung",description:"Die Richtung der Pfeile gehört zum Muster. Ersetzen Sie die Platzhalter.",query:"MATCH (a:LabelA)-[:VERBUNDEN_MIT]->(b:LabelB) RETURN a, b;"},
+ {group:"Beziehungen",title:"Beliebiger Beziehungstyp",description:"Ohne Beziehungstyp können verschiedene Kanten gefunden werden.",query:"MATCH (a)-[r]->(b) RETURN a, r, b;"},
+ {group:"Beziehungen",title:"Zwei Schritte",description:"Zwei aufeinanderfolgende Kanten verbinden drei Knoten.",query:"MATCH (a)-[r1]->(b)-[r2]->(c) RETURN a, b, c;"},
+ {group:"Auswertung",title:"Knoten zählen",description:"COUNT zählt Treffer.",query:"MATCH (n) RETURN count(n);"},
+ {group:"Auswertung",title:"Nach Label gruppieren",description:"Aggregieren Sie Knoten nach ihrem Label.",query:"MATCH (n) RETURN label(n), count(n);"},
+ {group:"Daten verändern",title:"Knoten erstellen",description:"Der Import erstellt die Tabelle für neue Labels automatisch. Jeder Knoten braucht id oder name als Schlüssel.",query:"CREATE (:Produkt {id:'P1', name:'Beispielprodukt'});"},
+ {group:"Daten verändern",title:"Beziehung erstellen",description:"Beide Endknoten müssen existieren. Ersetzen Sie die Beispiel-Labels und Schlüssel.",query:"MATCH (a:Produkt {id:'P1'}), (b:Kategorie {name:'Beispiel'}) CREATE (a)-[:GEHOERT_ZU]->(b);"}
 ];
 const helpPanel=document.getElementById("help-panel"),helpBackdrop=document.getElementById("help-backdrop"),helpButton=document.getElementById("help-open");
 function toggleHelp(open){helpPanel.classList.toggle("open",open);helpPanel.inert=!open;helpPanel.setAttribute("aria-hidden",String(!open));helpButton.setAttribute("aria-expanded",String(open));helpBackdrop.hidden=!open;if(open)document.getElementById("help-close").focus();else helpButton.focus()}
@@ -32,4 +31,4 @@ for(const ex of examples){
  action.onclick=()=>{const editor=document.getElementById("query");editor.value=ex.query;editor.dispatchEvent(new Event("input",{bubbles:true}));toggleHelp(false);editor.focus()};
  details.append(summary,description,pre,action);helpContent.append(details);
 }
-const foot=document.createElement("p");foot.className="help-disclaimer";foot.textContent="Hinweis: Die Beispiele beziehen sich auf die Freundschaftsdatenbank. LadybugDB verwendet Cypher, ist aber nicht vollständig Neo4j-kompatibel. Import-Sonderregeln gelten nur für das bereitgestellte Datenformat; andere Schreibabfragen können bei wiederholter Ausführung zusätzliche Daten erzeugen.";helpContent.append(foot);
+const foot=document.createElement("p");foot.className="help-disclaimer";foot.textContent="Die Beispiele verwenden Platzhalter wie Label und VERBUNDEN_MIT. Passen Sie diese an Ihren Datensatz an. LadybugDB unterstützt nicht alle Neo4j-Funktionen. Der automatische CREATE-Import benötigt pro Knoten eine eindeutige Eigenschaft id oder name; komplexe Neo4j-Skripte können zusätzliche Anpassungen benötigen.";helpContent.append(foot);
