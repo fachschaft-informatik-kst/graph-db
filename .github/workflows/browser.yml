@@ -32,6 +32,9 @@ jobs:
           await page.locator('#help-open').click();
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='false')throw Error('Help drawer did not open');
           await page.locator('#help-panel details').first().locator('summary').click();
+          if(!await page.locator('#help-panel details').first().locator('.help-code .cy-keyword').count())throw Error('Tutorial syntax highlighting missing');
+          if(await page.locator('#help-panel details').first().locator('.help-explanation li').count()<3)throw Error('Tutorial command explanations missing');
+          if(await page.locator('#help-panel details').count()<12)throw Error('Tutorial examples missing');
           await page.locator('#help-panel details').first().locator('button').click();
           if((await page.locator('#query').inputValue()).trim()!=='MATCH (n) RETURN n;')throw Error('Help example was not inserted');
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='true')throw Error('Help drawer did not close');
