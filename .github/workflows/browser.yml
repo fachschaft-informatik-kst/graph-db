@@ -25,6 +25,10 @@ jobs:
           const errors=[];
           page.on('pageerror',e=>errors.push(e.message));
           await page.goto('http://127.0.0.1:8080/',{waitUntil:'domcontentloaded'});
+          if(await page.locator('#tabs #add-tab').count()!==1)throw Error('Plus missing in tab bar');
+          if(await page.locator('.actions #add-tab').count())throw Error('Old add-tab button still in actions');
+          await page.locator('#tabs #add-tab').click();
+          if(await page.locator('#tabs .tab').count()!==2)throw Error('Plus did not add query tab');
           await page.locator('#help-open').click();
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='false')throw Error('Help drawer did not open');
           await page.locator('#help-panel details').first().locator('summary').click();
