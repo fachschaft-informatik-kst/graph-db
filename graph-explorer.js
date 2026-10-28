@@ -14,7 +14,7 @@
   if(typeof applyLabelColors==="function")applyLabelColors();
   cy.nodes().style({width:size,height:size});
   if(selection&&cy.getElementById(selection).length)cy.getElementById(selection).select();
-  if(keep){cy.zoom(zoom);cy.pan(pan)}else if(cy.elements().length)cy.layout({name:"cose",animate:false,randomize:false,fit:true,padding:40}).run();
+  if(keep){cy.zoom(zoom);cy.pan(pan)}else if(cy.elements().length){if(window.graphLayout)window.graphLayout.apply();else cy.layout({name:"cose",animate:false,randomize:false,fit:true,padding:40}).run()}
   $("graph-empty").hidden=ids.size>0;highlight();
  }
  function reset(){save();scope=null;expanded.clear();queryMode=false;resultIds.clear();redraw()}
