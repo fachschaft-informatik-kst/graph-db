@@ -43,13 +43,13 @@
   layoutMode=mode;
   for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===mode));
   if(!cy||cy.nodes().empty())return;
-  if(mode==="force")window.d3GraphForce.apply(cy);else cy.layout(options(mode)).run();
+  if(mode==="force")window.d3GraphForce.apply(cy);else {window.d3GraphForce.stop();cy.layout(options(mode)).run();}
  }
  add("force","Kraftbasiertes Layout",()=>arrange("force"),layouts);
  add("hierarchy","Hierarchisches Layout",()=>arrange("hierarchy"),layouts);
  add("circle","Kreisförmiges Layout",()=>arrange("circle"),layouts);
  for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===layoutMode));
- window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty()){if(layoutMode==="force")window.d3GraphForce.apply(cy);else cy.layout(options(layoutMode)).run()}},mode:()=>layoutMode};
+ window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty()){if(layoutMode==="force")window.d3GraphForce.apply(cy);else {window.d3GraphForce.stop();cy.layout(options(layoutMode)).run()}}},mode:()=>layoutMode};
  const previousDraw=draw;
  draw=function(){previousDraw();window.graphLayout.apply()};
 
