@@ -18,3 +18,12 @@
 .help-disclaimer{font-size:12px;color:#64748b;line-height:1.6;margin-top:22px}
 @media(max-width:600px){.help-head{padding:14px}.help-content{padding:8px 12px 24px}}
 @media(prefers-reduced-motion:reduce){.help-panel{transition:none}}
+
+.help-code .cy-keyword{color:#93b4ff;font-weight:700}
+.help-code .cy-string{color:#7de3b1}
+.help-code .cy-number{color:#ffc78a}
+.help-code .cy-label{color:#e1b4ff}
+.help-code .cy-comment{color:#94a3b8;font-style:italic}
+.help-explanation{margin:8px 14px 16px;padding-left:21px;color:#334155;font-size:13px;line-height:1.65}
+.help-explanation li{margin:6px 0}
+.help-example pre{font-size:13px;white-space:pre;overflow-x:auto;overflow-wrap:normal}
