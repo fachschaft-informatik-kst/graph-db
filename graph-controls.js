@@ -51,6 +51,6 @@
  for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===layoutMode));
  window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty()){if(layoutMode==="force")window.d3GraphForce.apply(cy);else {window.d3GraphForce.stop();cy.layout(options(layoutMode)).run()}}},mode:()=>layoutMode};
  const previousDraw=draw;
- draw=function(){previousDraw();window.graphLayout.apply()};
+ draw=function(){if(!cy)previousDraw()};
 
 })();
