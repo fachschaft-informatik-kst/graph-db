@@ -108,6 +108,6 @@
  $("view-graph").onclick=()=>view("graph");$("view-table").onclick=()=>view("table");$("view-both").onclick=()=>view("both");
  const oldWorkspace=workspace;workspace=function(){return {...oldWorkspace(),graphExplorer:{captions:{...captions},size}}};
  const oldLoad=load;load=function(w){Object.assign(captions,w?.graphExplorer?.captions||{});size=w?.graphExplorer?.size||42;$("graph-node-size").value=size;scope=null;queryMode=false;history=[];oldLoad(w)};
- window.graphExplorer={onQuery(){resultIds=rowIds(rows);queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();history=[];expanded.clear();redraw()},refresh(){redraw(true);captionsUI()}};
+ window.graphExplorer={selectItem:select,onQuery(){resultIds=rowIds(rows);queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();history=[];expanded.clear();redraw()},refresh(){redraw(true);captionsUI()}};
  draw();view("graph");
 })();
