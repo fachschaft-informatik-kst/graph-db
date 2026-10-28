@@ -19,7 +19,7 @@ textarea{width:100%;min-height:200px;resize:vertical;line-height:1.65}
 #label-colors{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center}
 .color-item{display:inline-flex;gap:5px;align-items:center;background:#f1f5f9;border-radius:999px;padding:4px 9px;white-space:nowrap}
 .color-item input{width:24px;height:24px;border:0;background:transparent;padding:0;cursor:pointer}
-#fit-graph{font-size:12px;padding:6px 9px}
+
 #table[hidden],#graph[hidden]{display:none}
 button:focus-visible,.button:focus-within,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
 @media(max-width:1000px){
