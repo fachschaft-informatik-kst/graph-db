@@ -47,3 +47,9 @@ button:focus-visible,.button:focus-within,input:focus-visible{outline:2px solid 
  #properties{height:110px}
  dialog{width:calc(100% - 24px);max-height:90dvh;overflow:auto}
 }
+
+/* Add-query control lives at the end of the tab strip. */
+.tabs{align-items:flex-end}
+.tab-add{flex:none;align-self:center;width:30px;height:30px;min-height:30px;padding:0;margin:0 4px 4px 2px;border:1px solid transparent;border-radius:7px;background:transparent;color:#64748b;font-size:22px;font-weight:400;line-height:1;display:grid;place-items:center}
+.tab-add:hover{background:#e3ebf8;border-color:#d1dff0;color:#1d4ed8}
+.actions:has(> #run){justify-content:flex-end}
