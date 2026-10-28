@@ -23,3 +23,12 @@ Die Bereitstellung erfolgt über den GitHub-Actions-Pages-Workflow und das Build
 ## Datenschutz
 
 Die Datenbank läuft lokal im Browser. URL-Links und Gists können den Arbeitsstand offenlegen. Auch geheime Gists sind für alle Personen mit dem direkten Link abrufbar. Ein GitHub-Token wird für die Sitzung in `sessionStorage` gespeichert; ein früher im SQLime-Playground hinterlegter Token kann am gleichen Origin übernommen werden.
+
+## Interaktive Graph-Erkundung
+
+- Eine Cypher-Abfrage mit `RETURN` zeigt im Graphen nur Knoten, die anhand ihrer zurückgegebenen Eigenschaften eindeutig dem unterstützten Importbestand zugeordnet werden können. Reine Tabellen- oder Aggregationsergebnisse zeigen keinen Graphen. Die Schaltfläche **Gesamten Graph anzeigen** wechselt zurück zum importierten Datenbestand.
+- **Doppelklick** auf einen Knoten: direkte Nachbarn einblenden, beim erneuten Doppelklick wieder einklappen. **Rechtsklick**: Nachbarn nach Beziehungstyp filtern, Knoten isolieren, ausblenden oder fixieren.
+- **Knoten suchen** hebt Treffer hervor; die Beschriftung lässt sich für jedes Label über das Auswahlfeld neben der Farbe bestimmen. Die Knotengrösse ist über einen Regler einstellbar.
+- **Beides** zeigt Graph und Ergebnistabelle gleichzeitig. Für eindeutig erkannte Knoten markiert ein Klick auf die Tabellenzeile denselben Knoten im Graphen.
+- **Zurück** stellt eine vorherige Explorationsansicht wieder her, **Zurücksetzen** zeigt den gesamten importierten Graphen. **PNG** und **SVG** exportieren die aktuelle Ansicht.
+- Die Erweiterung verwendet die beim unterstützten Import erfassten Knoten und Beziehungen als Explorationsgrundlage. Beliebige Cypher-Schreibbefehle, zusätzliche Neo4j-Metadaten oder mehrdeutige Rückgabewerte werden noch nicht automatisch in diese Projektion übernommen. Für diese Fälle bleibt die tabellarische Darstellung massgeblich.
