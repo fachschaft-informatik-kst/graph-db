@@ -41,6 +41,18 @@ jobs:
           await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('LadybugDB · 5 Knoten'),null,{timeout:60000});
           const status=await page.locator('#status').innerText();
           if(!status.includes('5 Knoten')||!status.includes('4 Beziehungen'))throw Error('Demo failed: '+status);
+          if(await page.locator('#graph-search').count()!==1)throw Error('Graph search missing');
+          if(await page.locator('#graph-empty').isVisible())throw Error('Demo result graph is empty');
+          await page.locator('#graph-search').fill('Anna');
+          if(await page.evaluate(()=>cy.nodes().filter(n=>n.style('opacity')==='1').length)===0)throw Error('Graph search found no nodes');
+          await page.locator('#graph-search').fill('');
+          await page.locator('#view-both').click();
+          if(!await page.locator('.results').evaluate(el=>el.classList.contains('both-views')))throw Error('Combined view missing');
+          await page.locator('#view-graph').click();
+          await page.locator('#graph-node-size').fill('60');
+          if(await page.evaluate(()=>Math.round(cy.nodes().first().width()))!==60)throw Error('Node size change failed');
+          await page.locator('#graph-reset').click();
+          await page.locator('#graph-back').click();
           if(await page.locator('#fit-graph').count())throw Error('Old fit graph button still present');
           if(await page.locator('#graph-navigation button').count()!==9)throw Error('Expected nine graph icon controls');
           await page.locator('[data-action="hierarchy"]').click();
