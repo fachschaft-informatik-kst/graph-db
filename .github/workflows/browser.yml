@@ -90,9 +90,25 @@ jobs:
           if(await page.locator('[data-action="hierarchy"]').getAttribute('aria-pressed')!=='true')throw Error('Hierarchy layout not selected');
           await page.locator('[data-action="force"]').click();
           if(await page.locator('[data-action="force"]').getAttribute('aria-pressed')!=='true')throw Error('Force layout not selected');
+          if(!await page.evaluate(()=>window.d3GraphForce.isActive()))throw Error('Live force simulation missing');
+          const dragCheck=await page.evaluate(()=>{
+            const node=cy.nodes().first(),other=cy.nodes().eq(1),before=other.position();
+            node.emit('grab');node.position({x:node.position('x')+240,y:node.position('y')+120});
+            const heated=window.d3GraphForce.alpha();
+            node.emit('free');
+            return {heated,otherBefore:before,otherId:other.id()};
+          });
+          if(dragCheck.heated<0.3)throw Error('Dragging did not reheat force simulation');
+          await page.waitForTimeout(250);
+          const moved=await page.evaluate(({otherId,otherBefore})=>{
+            const now=cy.getElementById(otherId).position();
+            return Math.hypot(now.x-otherBefore.x,now.y-otherBefore.y);
+          },dragCheck);
+          if(moved<1)throw Error('Neighbor nodes did not react to dragging');
           await page.locator('[data-action="circle"]').click();
           if(await page.locator('[data-action="circle"]').getAttribute('aria-pressed')!=='true')throw Error('Circular layout not selected');
           if(await page.evaluate(()=>window.graphLayout.mode())!=='circle')throw Error('Circular layout state missing');
+          if(await page.evaluate(()=>window.d3GraphForce.isActive()))throw Error('Force simulation continues in circle mode');
           await page.locator('#query').fill("MATCH (n:Person) RETURN n;");
           await page.locator('#run').click();
           await page.waitForFunction(()=>!document.querySelector('#run').disabled,null,{timeout:60000});

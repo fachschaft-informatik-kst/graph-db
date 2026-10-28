@@ -1,6 +1,7 @@
 /* Deterministic, settled D3 force layout with node/node and node/edge clearance. */
 (()=>{
  const clearance=26;
+ let active=null;
  function edgeAvoidance(links,radius){
   let items=[];
   function force(alpha){
@@ -28,7 +29,9 @@
   force.initialize=nodes=>{items=nodes};
   return force;
  }
+ function stop(){if(!active)return;active.simulation.stop();active.cy.off('grab','node',active.onGrab);active.cy.off('position','node',active.onPosition);active.cy.off('free','node',active.onFree);active=null}
  function apply(cy){
+  stop();
   if(!cy||cy.nodes().empty())return;
   if(!window.d3?.forceSimulation){console.warn("D3 unavailable; using Cytoscape fallback");cy.layout({name:"cose",animate:false,randomize:true,nodeRepulsion:17000,idealEdgeLength:140,fit:true,padding:55}).run();return}
   const elements=cy.nodes().toArray(),radius=Math.max(24,...elements.map(n=>Math.max(n.width(),n.height())/2));
@@ -61,6 +64,37 @@
    for(const node of elements){const p=map.get(node.id());if(!node.locked())node.position({x:p.x,y:p.y})}
   });
   cy.fit(cy.elements(),60);
+
+  let dragging=null,writing=false;
+  function render(){
+   if(!active||active.cy!==cy)return;
+   writing=true;
+   cy.batch(()=>{for(const node of elements){const p=map.get(node.id());if(!node.locked())node.position({x:p.x,y:p.y})}});
+   writing=false;
+  }
+  simulation.on("tick",render);
+  const onGrab=event=>{
+   const node=event.target,p=map.get(node.id());
+   if(!p||node.locked())return;
+   dragging=node.id();
+   const pos=node.position();
+   p.fx=pos.x;p.fy=pos.y;p.x=pos.x;p.y=pos.y;
+   simulation.alphaTarget(0.28).alpha(0.65).restart();
+  };
+  const onPosition=event=>{
+   if(writing||event.target.id()!==dragging)return;
+   const p=map.get(dragging),pos=event.target.position();
+   if(p){p.fx=pos.x;p.fy=pos.y;p.x=pos.x;p.y=pos.y}
+  };
+  const onFree=event=>{
+   if(event.target.id()!==dragging)return;
+   const p=map.get(dragging);
+   if(p){const pos=event.target.position();p.x=pos.x;p.y=pos.y;p.fx=null;p.fy=null}
+   dragging=null;
+   simulation.alphaTarget(0).alpha(Math.max(simulation.alpha(),0.38)).restart();
+  };
+  cy.on("grab","node",onGrab);cy.on("position","node",onPosition);cy.on("free","node",onFree);
+  active={cy,simulation,onGrab,onPosition,onFree};
  }
- window.d3GraphForce={apply};
+ window.d3GraphForce={apply,stop,isActive:()=>Boolean(active),alpha:()=>active?.simulation.alpha()??0};
 })();
