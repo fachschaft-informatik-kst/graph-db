@@ -12,6 +12,7 @@
   right:'<path d="m9 6 6 6-6 6"/>',
   fit:'<path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/>',
   force:'<circle cx="5" cy="6" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="19" r="2"/><path d="m7 7 10 0M6 8l5 9m7-8-5 8"/>',
+  circle:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="3" r="1.8" fill="currentColor"/><circle cx="20.6" cy="15" r="1.8" fill="currentColor"/><circle cx="3.4" cy="15" r="1.8" fill="currentColor"/>',
   hierarchy:'<rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-5h14v5"/>'
  };
  const buttons={};
@@ -33,20 +34,23 @@
  add("right","Nach rechts bewegen",()=>move(-70,0),pan);
  add("down","Nach unten bewegen",()=>move(0,-70),pan);
  const layouts=group();
+ function options(mode){
+  if(mode==="hierarchy")return {name:"breadthfirst",directed:true,spacingFactor:1.35,avoidOverlap:true,animate:false,padding:55,fit:true};
+  if(mode==="circle")return {name:"circle",startAngle:-Math.PI/2,clockwise:true,avoidOverlap:true,nodeDimensionsIncludeLabels:true,spacingFactor:1.25,animate:false,padding:55,fit:true};
+  return {name:"cose",animate:false,randomize:true,refresh:20,numIter:1800,nodeRepulsion:12500,idealEdgeLength:125,edgeElasticity:85,gravity:0.8,componentSpacing:120,nodeOverlap:24,padding:55,fit:true};
+ }
  function arrange(mode){
   layoutMode=mode;
-  buttons.force.setAttribute("aria-pressed",String(mode==="force"));
-  buttons.hierarchy.setAttribute("aria-pressed",String(mode==="hierarchy"));
+  for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===mode));
   if(!cy||cy.nodes().empty())return;
-  const options=mode==="hierarchy"
-   ?{name:"breadthfirst",directed:true,spacingFactor:1.15,animate:false,padding:45,fit:true}
-   :{name:"cose",animate:false,randomize:false,nodeRepulsion:8500,idealEdgeLength:105,edgeElasticity:100,padding:45,fit:true};
-  cy.layout(options).run();
+  cy.layout(options(mode)).run();
  }
  add("force","Kraftbasiertes Layout",()=>arrange("force"),layouts);
  add("hierarchy","Hierarchisches Layout",()=>arrange("hierarchy"),layouts);
- buttons.force.setAttribute("aria-pressed","true");
- buttons.hierarchy.setAttribute("aria-pressed","false");
+ add("circle","Kreisförmiges Layout",()=>arrange("circle"),layouts);
+ for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===layoutMode));
+ window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty())cy.layout(options(layoutMode)).run()},mode:()=>layoutMode};
  const previousDraw=draw;
- draw=function(){previousDraw();if(layoutMode==="hierarchy")arrange("hierarchy")};
+ draw=function(){previousDraw();window.graphLayout.apply()};
+
 })();
