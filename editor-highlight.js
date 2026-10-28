@@ -10,7 +10,7 @@
   while((match=token.exec(text))){
    if(match.index>last)target.append(document.createTextNode(text.slice(last,match.index)));
    const value=match[0],span=document.createElement("span");
-   span.className=value.startsWith("//")||value.startsWith("--")?"cy-comment":value.startsWith("\'")||value.startsWith('"')?"cy-string":/^\\d/.test(value)?"cy-number":/^[.:]/.test(value)?"cy-label":keywords.test(value)?"cy-keyword":"";
+   span.className=value.startsWith("//")||value.startsWith("--")?"cy-comment":value.startsWith("\'")||value.startsWith('"')?"cy-string":/^\d/.test(value)?"cy-number":/^[.:]/.test(value)?"cy-label":keywords.test(value)?"cy-keyword":"";
    span.textContent=value;target.append(span);last=token.lastIndex;
   }
   if(last<text.length)target.append(document.createTextNode(text.slice(last)));
