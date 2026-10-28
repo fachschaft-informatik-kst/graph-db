@@ -29,7 +29,7 @@
   force.initialize=nodes=>{items=nodes};
   return force;
  }
- function stop(){if(!active)return;active.simulation.stop();active.cy.off('.d3force');active=null}
+ function stop(){if(!active)return;active.simulation.stop();active.cy.off('grab','node',active.onGrab);active.cy.off('position','node',active.onPosition);active.cy.off('free','node',active.onFree);active=null}
  function apply(cy){
   stop();
   if(!cy||cy.nodes().empty())return;
@@ -73,27 +73,28 @@
    writing=false;
   }
   simulation.on("tick",render);
-  cy.on("grab.d3force","node",event=>{
+  const onGrab=event=>{
    const node=event.target,p=map.get(node.id());
    if(!p||node.locked())return;
    dragging=node.id();
    const pos=node.position();
    p.fx=pos.x;p.fy=pos.y;p.x=pos.x;p.y=pos.y;
    simulation.alphaTarget(0.28).alpha(0.65).restart();
-  });
-  cy.on("position.d3force","node",event=>{
+  };
+  const onPosition=event=>{
    if(writing||event.target.id()!==dragging)return;
    const p=map.get(dragging),pos=event.target.position();
    if(p){p.fx=pos.x;p.fy=pos.y;p.x=pos.x;p.y=pos.y}
-  });
-  cy.on("free.d3force","node",event=>{
+  };
+  const onFree=event=>{
    if(event.target.id()!==dragging)return;
    const p=map.get(dragging);
    if(p){const pos=event.target.position();p.x=pos.x;p.y=pos.y;p.fx=null;p.fy=null}
    dragging=null;
    simulation.alphaTarget(0).alpha(Math.max(simulation.alpha(),0.38)).restart();
-  });
-  active={cy,simulation};
+  };
+  cy.on("grab","node",onGrab);cy.on("position","node",onPosition);cy.on("free","node",onFree);
+  active={cy,simulation,onGrab,onPosition,onFree};
  }
  window.d3GraphForce={apply,stop,isActive:()=>Boolean(active),alpha:()=>active?.simulation.alpha()??0};
 })();
