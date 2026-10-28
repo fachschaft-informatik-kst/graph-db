@@ -95,5 +95,5 @@
   });
   active={cy,simulation};
  }
- window.d3GraphForce={apply,stop};
+ window.d3GraphForce={apply,stop,isActive:()=>Boolean(active),alpha:()=>active?.simulation.alpha()??0};
 })();
