@@ -29,10 +29,11 @@ jobs:
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='false')throw Error('Help drawer did not open');
           await page.locator('#help-panel details').first().locator('summary').click();
           await page.locator('#help-panel details').first().locator('button').click();
-          if((await page.locator('#query').inputValue()).trim()!=='MATCH (p:Person) RETURN p;')throw Error('Help example was not inserted');
+          if((await page.locator('#query').inputValue()).trim()!=='MATCH (n) RETURN n;')throw Error('Help example was not inserted');
           if(await page.locator('#help-panel').getAttribute('aria-hidden')!=='true')throw Error('Help drawer did not close');
           console.log('ENGINE BINDING',await page.evaluate(()=>document.querySelector('#run').onclick?.toString().slice(0,120)),'PAGE ERRORS',errors);
           await page.locator('#demo').click();
+          if(!await page.locator('#query-highlight .cy-keyword').count())throw Error('Cypher syntax highlighting missing');
           await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('LadybugDB · 5 Knoten'),null,{timeout:60000});
           const status=await page.locator('#status').innerText();
           if(!status.includes('5 Knoten')||!status.includes('4 Beziehungen'))throw Error('Demo failed: '+status);
@@ -41,13 +42,13 @@ jobs:
           if(count!==6)throw Error('Table rows: '+count);
           await page.locator('#share').click();
           if(!await page.locator('#connect-github').isVisible())throw Error('GitHub dialog missing');
+          if(!await page.locator('#gist-username').isVisible())throw Error('Gist username field missing');
           await page.locator('#close').click();
           page.once('dialog',d=>d.accept());
           await page.locator('#reset-db').click();
           await page.waitForFunction(()=>document.querySelector('#status').textContent==='Datenbank geleert',null,{timeout:60000});
           const dataset=await (await page.request.get('http://127.0.0.1:8080/daten/NEO4J_Freundschaften_GraphDB.cypher')).text();
-          await page.locator('#query').fill(dataset);
-          await page.locator('#run').click();
+          await page.locator('#file').setInputFiles({name:'beispiel.cypher',mimeType:'text/plain',buffer:Buffer.from(dataset)});
           try{await page.waitForFunction(()=>{const s=document.querySelector('#status').textContent;return s.startsWith('LadybugDB · 27 Knoten')||s.startsWith('Fehler')||s.includes('Startfehler')},null,{timeout:120000})}catch(e){throw Error('Dataset import stuck: '+await page.locator('#status').innerText())}
           console.log('DATASET STATUS:',await page.locator('#status').innerText());
           const first=await page.locator('#status').innerText();
@@ -58,6 +59,10 @@ jobs:
           if(!second.includes('27 Knoten')||!second.includes('59 Beziehungen'))throw Error('Repeated import duplicates: '+second);
           const colors=await page.locator('#label-colors input[type=color]').count();
           if(colors!==5)throw Error('Expected five node labels, got '+colors);
+          await page.locator('#query').fill("CREATE (:Produkt {id:'P1', name:'Test'});");
+          await page.locator('#run').click();
+          await page.waitForFunction(()=>!document.querySelector('#run').disabled,null,{timeout:60000});
+          if(!(await page.locator('#status').innerText()).includes('28 Knoten'))throw Error('Generic label import failed: '+await page.locator('#status').innerText());
           const mobile=await browser.newPage({viewport:{width:390,height:844}});
           await mobile.goto('http://127.0.0.1:8080/');
           await mobile.locator('#demo').click();
