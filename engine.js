@@ -95,11 +95,13 @@ async function runWithEngine(){
  tabs[active].text=$("query").value;
  const statements=split(tabs[active].text.replace(/^\s*\/\/.*$/gm,"")).map(statementParts).filter(p=>p.kind!=="query"||p.query);
  const button=$("run");button.disabled=true;rows=[];
+ let lastKind="import";
  let index=0;
  try{
   const conn=await initializeEngine();
-  for(const part of statements){index++;$("status").textContent="Importiere Anweisung "+index+"/"+statements.length+" · "+nodes.length+" Knoten · "+edges.length+" Beziehungen";await executeEngine(part,conn)}
+  for(const part of statements){index++;lastKind=part.kind==="query"&&/^\s*(MATCH|OPTIONAL MATCH|WITH|UNWIND|CALL)\b/i.test(part.query)?"query":"import";$("status").textContent="Importiere Anweisung "+index+"/"+statements.length+" · "+nodes.length+" Knoten · "+edges.length+" Beziehungen";await executeEngine(part,conn)}
   draw();
+  if(window.graphExplorer){if(lastKind==="query")window.graphExplorer.onQuery();else window.graphExplorer.onImport()}
   $("status").textContent="LadybugDB · "+nodes.length+" Knoten · "+edges.length+" Beziehungen · "+statements.length+" Anweisungen";
  }catch(e){draw();$("status").textContent="Fehler bei Anweisung "+index+"/"+statements.length+": "+e.message;console.error(e)}
  finally{button.disabled=false}
@@ -110,7 +112,7 @@ async function resetEngine(){
  for(const type of [...engineState.relTables].reverse()){await conn.query("DROP TABLE "+type.split("|")[0])}
  for(const label of [...engineState.nodeTables.keys()].reverse()){await conn.query("DROP TABLE "+label)}
  engineState.nodeTables.clear();engineState.relTables.clear();
- engineState.seenNodes.clear();engineState.seenEdges.clear();nodes=[];edges=[];rows=[];draw();$("status").textContent="Datenbank geleert";
+ engineState.seenNodes.clear();engineState.seenEdges.clear();nodes=[];edges=[];rows=[];draw();window.graphExplorer?.reset();$("status").textContent="Datenbank geleert";
 }
 $("run").onclick=runWithEngine;
 $("query").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();e.stopImmediatePropagation();runWithEngine()}},true);
