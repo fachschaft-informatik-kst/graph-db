@@ -77,7 +77,7 @@
    const select=document.createElement("select");select.setAttribute("aria-label","Beschriftung für "+labelName);
    for(const field of fields){const option=document.createElement("option");option.value=field;option.textContent=field;select.append(option)}
    select.value=captions[labelName]||(["name","title","id"].find(x=>fields.includes(x))||fields[0]);
-   select.onchange=()=>{captions[labelName]=select.value;redraw(true)};item.append(select);
+   select.onchange=()=>{captions[labelName]=select.value;if(!cy)return;cy.nodes().forEach(node=>{if(node.data("label")!==labelName)return;const source=nodes.find(n=>n.id===node.id());if(source)node.data("name",label(source))})};item.append(select);
   }
  }
  function resolveNode(v){
