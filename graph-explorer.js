@@ -1,7 +1,7 @@
 /* Interactive exploration of the imported graph and query results. */
 (()=>{
  const $=id=>document.getElementById(id),stage=document.querySelector(".graph-stage"),table=$("table"),menu=$("graph-context");
- let scope=null,history=[],selection=null,queryMode=false,resultIds=new Set(),size=42;
+ let scope=null,history=[],selection=null,queryMode=false,resultIds=new Set(),size=42;const expanded=new Set();
  const captions={};
  const all=()=>new Set(nodes.map(n=>n.id));
  const visible=()=>scope|| (queryMode?resultIds:all());
@@ -17,11 +17,11 @@
   if(keep){cy.zoom(zoom);cy.pan(pan)}else if(cy.elements().length)cy.layout({name:"cose",animate:false,randomize:false,fit:true,padding:40}).run();
   $("graph-empty").hidden=ids.size>0;highlight();
  }
- function reset(){save();scope=null;queryMode=false;resultIds.clear();redraw()}
+ function reset(){save();scope=null;expanded.clear();queryMode=false;resultIds.clear();redraw()}
  function neighbors(id,type){
-  save();const ids=new Set(visible());ids.add(id);
+  save();const ids=scope?new Set(visible()):new Set([id]);ids.add(id);
   for(const e of edges)if((e.source===id||e.target===id)&&(!type||e.label===type)){ids.add(e.source);ids.add(e.target)}
-  scope=ids;queryMode=false;redraw();
+  scope=ids;queryMode=false;expanded.add(id);redraw();
  }
  function remove(id){save();scope=new Set(visible());scope.delete(id);redraw()}
  function select(id){
@@ -44,7 +44,7 @@
  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});
  function bind(){
   if(!cy||cy.scratch("_explorerBound"))return;cy.scratch("_explorerBound",true);
-  cy.on("dbltap","node",e=>neighbors(e.target.id()));
+  cy.on("dbltap","node",e=>{const id=e.target.id();if(expanded.has(id)){save();expanded.delete(id);scope=new Set([id]);for(const n of expanded)for(const edge of edges)if(edge.source===n||edge.target===n){scope.add(edge.source);scope.add(edge.target)}queryMode=false;redraw()}else neighbors(id)});
   cy.on("cxttap","node",e=>{const r=stage.getBoundingClientRect(),ev=e.originalEvent||{};openMenu({clientX:ev.clientX||r.left+70,clientY:ev.clientY||r.top+70},e.target.id())});
   cy.on("tap","node,edge",e=>select(e.target.id()));
  }
@@ -108,6 +108,6 @@
  $("view-graph").onclick=()=>view("graph");$("view-table").onclick=()=>view("table");$("view-both").onclick=()=>view("both");
  const oldWorkspace=workspace;workspace=function(){return {...oldWorkspace(),graphExplorer:{captions:{...captions},size}}};
  const oldLoad=load;load=function(w){Object.assign(captions,w?.graphExplorer?.captions||{});size=w?.graphExplorer?.size||42;$("graph-node-size").value=size;scope=null;queryMode=false;history=[];oldLoad(w)};
- window.graphExplorer={onQuery(){resultIds=rowIds(rows);queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();history=[];redraw()},refresh(){redraw(true);captionsUI()}};
+ window.graphExplorer={onQuery(){resultIds=rowIds(rows);queryMode=true;scope=null;redraw()},onImport(){queryMode=false;scope=null;redraw();captionsUI()},reset(){scope=null;queryMode=false;resultIds.clear();history=[];expanded.clear();redraw()},refresh(){redraw(true);captionsUI()}};
  draw();view("graph");
 })();
