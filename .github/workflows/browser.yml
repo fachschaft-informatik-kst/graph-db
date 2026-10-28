@@ -41,6 +41,21 @@ jobs:
           await page.waitForFunction(()=>document.querySelector('#status').textContent.startsWith('LadybugDB · 5 Knoten'),null,{timeout:60000});
           const status=await page.locator('#status').innerText();
           if(!status.includes('5 Knoten')||!status.includes('4 Beziehungen'))throw Error('Demo failed: '+status);
+          if(!await page.evaluate(()=>Boolean(window.d3?.forceSimulation&&window.d3GraphForce)))throw Error('D3 force engine unavailable');
+          const spacing=await page.evaluate(()=>{
+            const ns=cy.nodes().toArray(),es=cy.edges().toArray();
+            let nodeDistance=Infinity,edgeDistance=Infinity;
+            for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++)nodeDistance=Math.min(nodeDistance,Math.hypot(ns[i].position('x')-ns[j].position('x'),ns[i].position('y')-ns[j].position('y')));
+            for(const n of ns)for(const e of es){
+              if(e.source().id()===n.id()||e.target().id()===n.id())continue;
+              const p=n.position(),a=e.source().position(),b=e.target().position(),dx=b.x-a.x,dy=b.y-a.y;
+              const t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1)));
+              edgeDistance=Math.min(edgeDistance,Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy));
+            }
+            return {nodeDistance,edgeDistance};
+          });
+          if(spacing.nodeDistance<58)throw Error('Force layout node overlap: '+JSON.stringify(spacing));
+          if(spacing.edgeDistance<22)throw Error('Force layout node-edge overlap: '+JSON.stringify(spacing));
           if(await page.locator('#graph-search').count()!==1)throw Error('Graph search missing');
           await page.locator('#query').fill("MATCH (n:Person {name:'Anna'}) RETURN n;");
           await page.locator('#run').click();

@@ -37,19 +37,19 @@
  function options(mode){
   if(mode==="hierarchy")return {name:"breadthfirst",directed:true,spacingFactor:1.35,avoidOverlap:true,animate:false,padding:55,fit:true};
   if(mode==="circle")return {name:"circle",startAngle:-Math.PI/2,clockwise:true,avoidOverlap:true,nodeDimensionsIncludeLabels:true,spacingFactor:1.25,animate:false,padding:55,fit:true};
-  return {name:"cose",animate:false,randomize:true,refresh:20,numIter:1800,nodeRepulsion:12500,idealEdgeLength:125,edgeElasticity:85,gravity:0.8,componentSpacing:120,nodeOverlap:24,padding:55,fit:true};
+  return null;
  }
  function arrange(mode){
   layoutMode=mode;
   for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===mode));
   if(!cy||cy.nodes().empty())return;
-  cy.layout(options(mode)).run();
+  if(mode==="force")window.d3GraphForce.apply(cy);else cy.layout(options(mode)).run();
  }
  add("force","Kraftbasiertes Layout",()=>arrange("force"),layouts);
  add("hierarchy","Hierarchisches Layout",()=>arrange("hierarchy"),layouts);
  add("circle","Kreisförmiges Layout",()=>arrange("circle"),layouts);
  for(const name of ["force","hierarchy","circle"])buttons[name].setAttribute("aria-pressed",String(name===layoutMode));
- window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty())cy.layout(options(layoutMode)).run()},mode:()=>layoutMode};
+ window.graphLayout={apply:()=>{if(cy&&!cy.nodes().empty()){if(layoutMode==="force")window.d3GraphForce.apply(cy);else cy.layout(options(layoutMode)).run()}},mode:()=>layoutMode};
  const previousDraw=draw;
  draw=function(){previousDraw();window.graphLayout.apply()};
 
