@@ -9,10 +9,9 @@
  function save(){history.push({scope:scope?new Set(scope):null,queryMode,resultIds:new Set(resultIds),resultEdges:new Set(resultEdges),pan:cy?.pan(),zoom:cy?.zoom()});if(history.length>30)history.shift();$("graph-back").disabled=false}
  function redraw(keep=false){
   if(!cy)return;
-  const ids=visible(),existing=new Set(cy.nodes().map(n=>n.id()));
-  const wantedEdges=edges.filter(e=>ids.has(e.source)&&ids.has(e.target)&&(!queryMode||resultEdges.has(e.id)));
+  const ids=visible();
+  const wantedEdges=edges.filter(e=>ids.has(e.source)&&ids.has(e.target)&&(!queryMode||resultEdges.size===0||resultEdges.has(e.id)));
   const desired=new Set([...ids,...wantedEdges.map(e=>e.id)]);
-  const before=new Set(cy.elements().map(e=>e.id()));
   const removed=cy.elements().filter(e=>!desired.has(e.id()));
   if(removed.length)removed.remove();
   const newNodes=nodes.filter(n=>ids.has(n.id)&&!cy.getElementById(n.id).length);
